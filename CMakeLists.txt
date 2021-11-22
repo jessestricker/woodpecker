@@ -1,0 +1,24 @@
+cmake_minimum_required(VERSION 3.14 FATAL_ERROR)
+project(
+  woodpecker
+  VERSION 0.1.0
+  LANGUAGES CXX)
+
+# extra properties
+set(PROJECT_DISPLAY_NAME "Woodpecker")
+set(PROJECT_AUTHOR "Jesse Stricker")
+
+# dependencies: Qt
+include(cmake/QtEnv.cmake)
+list(APPEND CMAKE_PREFIX_PATH "${QT_INSTALL_DIR}")
+find_package(Qt6 REQUIRED COMPONENTS Widgets)
+message(STATUS "Using Qt v${Qt6_VERSION}")
+
+# dependencies: CPM
+include(cmake/CPM.cmake)
+cpmaddpackage("gh:gabime/spdlog@1.9.2")
+cpmaddpackage("gh:onqtam/doctest#2.4.6")
+
+# targets
+add_subdirectory(src/woodpecker)
+add_subdirectory(src/woodpecker_app)

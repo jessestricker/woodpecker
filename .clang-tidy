@@ -1,0 +1,1 @@
+Checks: '*,-fuchsia-*,-google-*,-zircon-*,-abseil-*,-llvm*,-altera-*,-modernize-use-trailing-return-type,-readability-identifier-length'

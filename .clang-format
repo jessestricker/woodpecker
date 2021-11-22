@@ -1,0 +1,25 @@
+Language: Cpp
+Standard: Latest
+
+BasedOnStyle: Google
+
+ColumnLimit: 120
+NamespaceIndentation: All
+AccessModifierOffset: -2
+AllowShortFunctionsOnASingleLine: None
+FixNamespaceComments: false
+
+IncludeBlocks: Regroup
+IncludeCategories:
+  # libraries
+  - Regex: '\.h(pp)?>$'
+    Priority: 2
+  # Qt libraries
+  - Regex: '^<Q'
+    Priority: 2
+  # standard
+  - Regex: '^<'
+    Priority: 1
+  # project
+  - Regex: '^"'
+    Priority: 3
