@@ -31,3 +31,9 @@ set(QT_INSTALL_DIR "C:/Qt/6.2.1/msvc2019_64")
 
 This file is included by the main `CMakeLists.txt` and appends the Qt
 installation directory to the CMake prefix path.
+
+In addition to that, when running the executable `woodpecker_app.exe` on
+Windows, you need to set the `PATH` variable to include `${QT_INSTALL_DIR}/bin`
+directory. Unfortunately, this can not be done via CMake, instead set this in
+your IDE when debugging. For example, in CLion this can be set in the *
+Environment* configuration field in the *Run Configurations*.

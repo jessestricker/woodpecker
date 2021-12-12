@@ -12,7 +12,6 @@ set(PROJECT_AUTHOR "Jesse Stricker")
 include(cmake/QtEnv.cmake)
 list(APPEND CMAKE_PREFIX_PATH "${QT_INSTALL_DIR}")
 find_package(Qt6 REQUIRED COMPONENTS Widgets)
-message(STATUS "Using Qt v${Qt6_VERSION}")
 
 # dependencies: CPM
 include(cmake/CPM.cmake)
