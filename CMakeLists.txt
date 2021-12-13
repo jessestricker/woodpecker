@@ -16,7 +16,7 @@ find_package(Qt6 REQUIRED COMPONENTS Widgets)
 # dependencies: CPM
 include(cmake/CPM.cmake)
 cpmaddpackage("gh:gabime/spdlog@1.9.2")
-cpmaddpackage("gh:onqtam/doctest#2.4.6")
+cpmaddpackage("gh:doctest/doctest#2.4.7")
 cpmaddpackage("gh:jeremyong/klein@2.2.1")
 
 # targets
