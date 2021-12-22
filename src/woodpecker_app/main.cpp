@@ -19,16 +19,24 @@
 #include <QMainWindow>
 #include <spdlog/spdlog.h>
 #include <woodpecker/config.hpp>
-#include <woodpecker/scene.hpp>
+#include <woodpecker/util/assert.hpp>
 
 #include "util/qt.hpp"
 
 namespace wdp::app {
-  int main(int argc, char* argv[]) {
-    Scene scene;
-    scene.action();
+  struct Tester {
+    Tester() {
+      spdlog::info("hello");
+    }
 
+    ~Tester() noexcept {
+      spdlog::info("goodbye");
+    }
+  };
+
+  int main(int argc, char* argv[]) {
     spdlog::info("{} v{} by {}", project_name, project_version, project_author);
+    Tester tst;
 
     const auto app = QApplication{argc, argv};
 
