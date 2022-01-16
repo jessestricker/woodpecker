@@ -1,0 +1,13 @@
+# Doxyfile 1.9.3
+
+PROJECT_NAME   = "Woodpecker"
+PROJECT_NUMBER = "0.1.0"
+PROJECT_BRIEF  = "A 3D solid modelling system, designed to aid in woodworking."
+
+OUTPUT_DIRECTORY = docs/
+
+INPUT     = README.md src/
+RECURSIVE = YES
+
+GENERATE_HTML  = YES
+GENERATE_LATEX = NO
