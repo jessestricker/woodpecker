@@ -17,7 +17,7 @@ find_package(Qt6 REQUIRED COMPONENTS Widgets)
 include(cmake/CPM.cmake)
 CPMAddPackage("gh:gabime/spdlog@1.9.2")
 CPMAddPackage("gh:doctest/doctest#2.4.7")
-CPMAddPackage("gh:jeremyong/klein@2.2.1")
+CPMAddPackage("gh:jeremyong/klein#16f46a0ad3c843beea7b13ea666658ca475ec665")
 
 # targets
 add_subdirectory(src/woodpecker)
