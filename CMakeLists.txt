@@ -9,9 +9,12 @@ set(PROJECT_DISPLAY_NAME "Woodpecker")
 set(PROJECT_AUTHOR "Jesse Stricker")
 
 # dependencies: Qt
-include(cmake/QtEnv.cmake)
-list(APPEND CMAKE_PREFIX_PATH "${QT_INSTALL_DIR}")
-find_package(Qt6 REQUIRED COMPONENTS Widgets)
+find_package(Qt6 REQUIRED COMPONENTS Widgets 3DCore 3DRender 3DExtras)
+message(STATUS "Using Qt version: ${Qt6_VERSION}")
+
+# dependencies: Boost
+find_package(Boost 1.56 REQUIRED)
+message(STATUS "Using Boost version: ${Boost_VERSION_STRING}")
 
 # dependencies: CPM
 include(cmake/CPM.cmake)
