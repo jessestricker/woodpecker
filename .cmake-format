@@ -1,2 +1,4 @@
 autosort: true
-command_case: unchanged
+additional_commands:
+  cpmaddpackage:
+    spelling: CPMAddPackage

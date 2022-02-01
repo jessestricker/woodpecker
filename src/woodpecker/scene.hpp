@@ -17,9 +17,20 @@
 
 #pragma once
 
+#include <vector>
+
+#include <woodpecker/joint.hpp>
+#include <woodpecker/part.hpp>
+
 namespace wdp {
   class Scene {
   public:
-    void action();
+    const auto& parts() const noexcept { return parts_; }
+
+    void add_part(const Part& part) { parts_.push_back(part); }
+
+  private:
+    std::vector<Part> parts_;
+    std::vector<Joint> joints_;
   };
 }

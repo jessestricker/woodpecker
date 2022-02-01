@@ -15,20 +15,36 @@
 // You should have received a copy of the GNU General Public License
 // along with Woodpecker.  If not, see <https://www.gnu.org/licenses/>.
 
-#include "qt.hpp"
+#pragma once
 
-#include <algorithm>
+#include <array>
+#include <memory>
 
-namespace wdp::app {
-  QString qstring_from_sv(std::string_view sv) {
-    const auto sv_size = narrow<qsizetype>(sv.size());
-    return QString::fromUtf8(sv.data(), sv_size);
-  }
+#include <woodpecker/part.hpp>
 
-  QMatrix4x4 qmatrix_from_kln_motor(const kln::motor& m) {
-    const auto kln_mat = m.as_mat4x4();
-    auto qmat = QMatrix4x4{};
-    std::copy_n(std::begin(kln_mat.data), 4 * 4, qmat.data());
-    return qmat;
-  }
+namespace wdp {
+  enum class Fastener {
+    // mechanical
+    dowel,
+    screw,
+    nail,
+    // other
+    glue
+  };
+
+  class JointTypeBase {
+  public:
+    virtual ~JointTypeBase() noexcept = default;
+  };
+
+  struct MiterJointType : JointTypeBase {};
+
+  struct ButtJointType : JointTypeBase {
+    Fastener fastener;
+  };
+
+  struct Joint {
+    std::unique_ptr<JointTypeBase> type;
+    std::array<const Part*, 2> parts;
+  };
 }

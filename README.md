@@ -20,20 +20,19 @@ Woodpecker. If not, see <https://www.gnu.org/licenses/>.
 
 ## Development
 
-This project is build with CMake. It uses Qt as one of its dependencies, so for
-CMake to find the Qt library files, the prefix path variable must be set.  
-To do that, create a file `cmake/QtEnv.cmake` and set the `QT_INSTALL_DIR`
-variable there, for example:
+This project is build with CMake and uses Qt6 and Boost as its dependencies,
+so you must have these installed.
+On some operating systems (especially Windows), CMake can not find these dependencies on its own.
+Set the following variables using the `-D<name>=<value>` flag when running CMake:
 
-```cmake
-set(QT_INSTALL_DIR "C:/Qt/6.2.1/msvc2019_64")
-```
+- for Qt, `CMAKE_PREFIX_PATH`: path to compiler-specific library directory, e.g. `C:\Qt\6.2.1\msvc2019_64`
+- for Boost, `BOOST_ROOT`: path to root directory of the installation, e.g. `C:\Libs\boost_1_78_0`
 
-This file is included by the main `CMakeLists.txt` and appends the Qt
-installation directory to the CMake prefix path.
+See [top-level build file](CMakeLists.txt) for the minimum required versions.
 
-In addition to that, when running the executable `woodpecker_app.exe` on
-Windows, you need to set the `PATH` variable to include `${QT_INSTALL_DIR}/bin`
-directory. Unfortunately, this can not be done via CMake, instead set this in
-your IDE when debugging. For example, in CLion this can be set in the
-*Environment* configuration field in the *Run Configurations*.
+## Running
+
+On Windows, you need to set the `PATH` variable to include `<qt_path>/bin`
+directory. Unfortunately, this can not be easily done with CMake. Instead, set this in
+your IDE settings. For example, in JetBrains CLion this can be set in the
+_Environment_ text field in the _Run/Debug Configurations_ window.

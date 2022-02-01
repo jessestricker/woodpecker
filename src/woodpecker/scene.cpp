@@ -16,8 +16,3 @@
 // along with Woodpecker.  If not, see <https://www.gnu.org/licenses/>.
 
 #include "scene.hpp"
-
-namespace wdp {
-  void Scene::action() {
-  }
-}

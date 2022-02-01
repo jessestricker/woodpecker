@@ -19,25 +19,27 @@
 
 #include <cstdlib>
 #include <string_view>
+#include <source_location>
 
 #include <spdlog/spdlog.h>
 
 namespace wdp {
   struct SourceLocation {
-    const char* file = nullptr;
-    unsigned line = 0;
-    const char* function = nullptr;  // optional, may be nullptr
+    std::string_view file;
+    unsigned line{};
+    std::string_view function;  // optional, may be empty
   };
 }
 
 template <>
-struct fmt::formatter<wdp::SourceLocation> : fmt::formatter<string_view> {
+struct fmt::formatter<wdp::SourceLocation> : fmt::formatter<std::string_view> {
   template <class FormatContext>
   auto format(const wdp::SourceLocation& src_loc, FormatContext& ctx) {
-    if (src_loc.function != nullptr) {
-      return format_to(ctx.out(), "{}:{}, {}", src_loc.file, src_loc.line, src_loc.function);
+    auto out = fmt::format_to(ctx.out(), "{}:{}",src_loc.file, src_loc.line);
+    if (!src_loc.function.empty()) {
+      out = fmt::format_to(out, ", {}", src_loc.function);
     }
-    return format_to(ctx.out(), "{}:{}", src_loc.file, src_loc.line);
+    return out;
   }
 };
 
@@ -49,17 +51,14 @@ struct fmt::formatter<wdp::SourceLocation> : fmt::formatter<string_view> {
 #error unsupported compiler
 #endif
 
-#define WDP_CURRENT_SOURCE_LOCATION         \
-  ::wdp::SourceLocation {                   \
-    __FILE__, __LINE__, WDP_PRETTY_FUNCTION \
-  }
+#define WDP_CURRENT_SOURCE_LOCATION \
+  ::wdp::SourceLocation { __FILE__, __LINE__, WDP_PRETTY_FUNCTION }
 
 namespace wdp {
   class Assertion {
   public:
-    Assertion(const char* expr_str, const SourceLocation& src_loc, const char* message = nullptr)
-        : expr_str_{expr_str}, src_loc_{src_loc}, message_{message} {
-    }
+    Assertion(std::string_view expr_str, const SourceLocation& src_loc, std::string_view message = "")
+        : expr_str_{expr_str}, src_loc_{src_loc}, message_{message} {}
 
     template <class ExprLambda>
     void operator()(const ExprLambda& expr_lambda) noexcept {
@@ -72,14 +71,14 @@ namespace wdp {
     }
 
   private:
-    const char* expr_str_;
+    std::string_view expr_str_;
     SourceLocation src_loc_;
-    const char* message_;  // optional, may be nullptr
+    std::string_view message_;  // optional, may be empty
 
     void log_violation() noexcept {
       spdlog::critical("assertion violated: {}", expr_str_);
       spdlog::critical("  source: {}", src_loc_);
-      if (message_ != nullptr) {
+      if (!message_.empty()) {
         spdlog::critical("  message: {}", message_);
       }
       spdlog::shutdown();

@@ -17,10 +17,25 @@
 
 #pragma once
 
+#include <span>
 #include <string_view>
+#include <vector>
 
+#include <QByteArray>
+#include <QMatrix4x4>
 #include <QString>
+#include <klein/motor.hpp>
+#include <woodpecker/util/cast.hpp>
 
 namespace wdp::app {
   QString qstring_from_sv(std::string_view sv);
+
+  template <class Element>
+  QByteArray qbyte_array_from_vector(const std::vector<Element>& vec) {
+    const auto span = std::span{vec};
+    const auto bytes_span = std::as_bytes(span);
+    return QByteArray{reinterpret_cast<const char*>(bytes_span.data()), narrow<qsizetype>(bytes_span.size())};
+  }
+
+  QMatrix4x4 qmatrix_from_kln_motor(const kln::motor& m);
 }

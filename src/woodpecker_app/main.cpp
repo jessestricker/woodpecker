@@ -16,27 +16,18 @@
 // along with Woodpecker.  If not, see <https://www.gnu.org/licenses/>.
 
 #include <QApplication>
-#include <QMainWindow>
 #include <spdlog/spdlog.h>
 #include <woodpecker/config.hpp>
-#include <woodpecker/scene.hpp>
 
-#include "util/qt.hpp"
+#include "main_window.hpp"
 
 namespace wdp::app {
   int main(int argc, char* argv[]) {
-    Scene scene;
-    scene.action();
-
     spdlog::info("{} v{} by {}", project_name, project_version, project_author);
 
     const auto app = QApplication{argc, argv};
-
-    auto window = QMainWindow{};
-    window.setWindowTitle(qstring_from_sv(project_name));
-    window.setMinimumSize(640, 360);
+    auto window = MainWindow{};
     window.show();
-
     return QApplication::exec();
   }
 }

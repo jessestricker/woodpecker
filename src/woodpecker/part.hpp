@@ -15,20 +15,22 @@
 // You should have received a copy of the GNU General Public License
 // along with Woodpecker.  If not, see <https://www.gnu.org/licenses/>.
 
-#include "qt.hpp"
+#pragma once
 
-#include <algorithm>
+#include <woodpecker/mesh.hpp>
+#include <woodpecker/pga.hpp>
 
-namespace wdp::app {
-  QString qstring_from_sv(std::string_view sv) {
-    const auto sv_size = narrow<qsizetype>(sv.size());
-    return QString::fromUtf8(sv.data(), sv_size);
-  }
+namespace wdp {
+  class Part {
+  public:
+    explicit Part(const Mesh& mesh);
 
-  QMatrix4x4 qmatrix_from_kln_motor(const kln::motor& m) {
-    const auto kln_mat = m.as_mat4x4();
-    auto qmat = QMatrix4x4{};
-    std::copy_n(std::begin(kln_mat.data), 4 * 4, qmat.data());
-    return qmat;
-  }
+    const auto& mesh() const noexcept { return mesh_; }
+    const auto& motor() const noexcept { return motor_; }
+    void set_motor(const kln::motor& motor) noexcept { motor_ = motor; }
+
+  private:
+    Mesh mesh_;
+    kln::motor motor_{identity_motor};
+  };
 }

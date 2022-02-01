@@ -15,20 +15,24 @@
 // You should have received a copy of the GNU General Public License
 // along with Woodpecker.  If not, see <https://www.gnu.org/licenses/>.
 
-#include "qt.hpp"
+#pragma once
 
-#include <algorithm>
+#include <cmath>
+#include <numbers>
 
-namespace wdp::app {
-  QString qstring_from_sv(std::string_view sv) {
-    const auto sv_size = narrow<qsizetype>(sv.size());
-    return QString::fromUtf8(sv.data(), sv_size);
-  }
+#include <klein/klein.hpp>
 
-  QMatrix4x4 qmatrix_from_kln_motor(const kln::motor& m) {
-    const auto kln_mat = m.as_mat4x4();
-    auto qmat = QMatrix4x4{};
-    std::copy_n(std::begin(kln_mat.data), 4 * 4, qmat.data());
-    return qmat;
+namespace wdp {
+  /// The Archimedes constant as a single-precision floating-point number.
+  inline constexpr auto pi = std::numbers::pi_v<float>;
+
+  /// A motor that when applies does not change the argument.
+  inline static const auto identity_motor = kln::motor{1, 0, 0, 0, 0, 0, 0, 0};
+
+  /// This namespace contains fixed versions of broken functions in the `kln` namespace.
+  namespace fix_kln {
+    inline auto normalized(const kln::plane& p) noexcept { return p / p.norm(); }
+
+    inline auto normalized(const kln::line& l) noexcept { return l / std::hypot(l.e12(), l.e31(), l.e23()); }
   }
 }
