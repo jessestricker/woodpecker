@@ -1,1 +1,0 @@
-Checks: '*,-fuchsia-*,-google-*,-zircon-*,-abseil-*,-llvm*,-altera-*,-modernize-use-trailing-return-type,-readability-identifier-length,-modernize-use-nodiscard,-cppcoreguidelines-pro-bounds-array-to-pointer-decay,-hicpp-no-array-decay'
