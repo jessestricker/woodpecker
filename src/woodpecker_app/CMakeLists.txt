@@ -1,4 +1,5 @@
-add_executable(woodpecker_app main.cpp main.qrc matcap_material.cpp util/qt.cpp)
+add_executable(woodpecker_app main.cpp main.qrc main_window.cpp
+                              matcap_material.cpp util/qt.cpp)
 
 set_target_properties(woodpecker_app PROPERTIES AUTOMOC ON AUTORCC ON)
 target_link_libraries(woodpecker_app PRIVATE woodpecker Qt::Widgets Qt::3DCore
