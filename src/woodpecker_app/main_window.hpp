@@ -18,9 +18,9 @@
 #pragma once
 
 #include <QMainWindow>
-#include <Qt3DCore>
-#include <Qt3DExtras>
-#include <Qt3DRender>
+#include <Qt3DCore/QEntity>
+#include <Qt3DExtras/Qt3DWindow>
+#include <Qt3DRender/QMaterial>
 #include <woodpecker/scene.hpp>
 
 namespace wdp::app {
