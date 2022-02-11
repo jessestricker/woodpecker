@@ -1,4 +1,5 @@
-add_library(woodpecker STATIC joint.cpp mesh.cpp part.cpp scene.cpp)
+file(GLOB_RECURSE sources CONFIGURE_DEPENDS "*.cpp")
+add_library(woodpecker STATIC ${sources})
 
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/config.in.hpp
                ${CMAKE_CURRENT_BINARY_DIR}/config.hpp)
