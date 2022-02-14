@@ -17,20 +17,35 @@
 
 #pragma once
 
+#include <memory>
+#include <string>
+
 #include <woodpecker/mesh.hpp>
 #include <woodpecker/pga.hpp>
 
 namespace wdp {
   class Part {
   public:
-    explicit Part(const Mesh& mesh);
+    Part();
+
+    const auto& name() const noexcept { return name_; }
+    void set_name(const std::string& name) { name_ = name; }
 
     const auto& mesh() const noexcept { return mesh_; }
-    const auto& motor() const noexcept { return motor_; }
-    void set_motor(const kln::motor& motor) noexcept { motor_ = motor; }
+    void set_mesh(const Mesh& mesh) { mesh_ = mesh; }
+
+    const auto& rotor() const { return rotor_; }
+    const auto& translator() const { return translator_; }
+    auto& rotor() { return rotor_; }
+    auto& translator() { return translator_; }
+    auto motor() const noexcept { return rotor_ * translator_; }
 
   private:
-    Mesh mesh_;
-    kln::motor motor_{identity_motor};
+    static std::size_t name_counter_;
+
+    std::string name_;                  ///< name, must not be unique
+    Mesh mesh_;                         ///< the mesh of the part, in local space
+    kln::rotor rotor_{0, 1, 0, 0};
+    kln::translator translator_{0, 1, 0, 0};
   };
 }

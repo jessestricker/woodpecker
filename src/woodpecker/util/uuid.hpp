@@ -17,42 +17,37 @@
 
 #pragma once
 
-#include <array>
-#include <memory>
+#include <atomic>
+#include <cstdint>
 
-#include <woodpecker/part.hpp>
+#include "fmt/format.h"
 
 namespace wdp {
-  /// A fastener is used in joints which are not strong enough on their own.
-  enum class Fastener {
-    // mechanical
-    dowel,
-    screw,
-    nail,
-    // other
-    glue
-  };
-
-  /// The abstract base class of all joint types.
-  class JointTypeBase {
+  class Id {
   public:
-    virtual ~JointTypeBase() noexcept = default;
+    using Value = std::uint64_t;
 
-  protected:
-    JointTypeBase() noexcept = default;
-  };
+    constexpr explicit Id(Value value) noexcept : value_{value} {}
 
-  struct ButtJointType : JointTypeBase {
-    Fastener fastener;
-  };
+    /// @throw std::logic_error if all unique Ids are exhausted
+    static Id create_unique();
 
-  struct BoxJointType : JointTypeBase {
-    // TODO: parameters, like finger width, finger length
-  };
+    constexpr bool operator==(const Id&) const noexcept = default;
 
-  /// A joint is a connection between two parts.
-  struct Joint {
-    std::unique_ptr<JointTypeBase> type;
-    std::array<const Part*, 2> parts;
+    constexpr Value value() const noexcept { return value_; }
+
+  private:
+    static std::atomic<Value> counter_;
+
+    Value value_;
   };
 }
+
+template <>
+struct fmt::formatter<wdp::Id> : fmt::formatter<std::string> {
+  template <class FC>
+  auto format(const wdp::Id& id, FC& ctx) {
+    const auto str = fmt::format("{:x}", id.value());
+    return fmt::formatter<std::string>::format(str, ctx);
+  }
+};

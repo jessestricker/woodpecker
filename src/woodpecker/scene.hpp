@@ -17,20 +17,38 @@
 
 #pragma once
 
-#include <vector>
+#include <algorithm>
+#include <list>
+#include <ranges>
+#include <span>
 
 #include <woodpecker/joint.hpp>
 #include <woodpecker/part.hpp>
+#include <woodpecker/pga.hpp>
+#include <woodpecker/util/assert.hpp>
 
 namespace wdp {
   class Scene {
   public:
-    const auto& parts() const noexcept { return parts_; }
+    inline static const auto ground_plane = kln::plane{1, 0, 1, 0};
+    inline static const auto vertical_axis = kln::origin{} & kln::point{0, 1, 0};
 
-    void add_part(const Part& part) { parts_.push_back(part); }
+    auto parts() const { return parts_ | std::ranges::views::all; }
+    auto parts() { return parts_ | std::ranges::views::all; }
+
+    Part& add_part() { return parts_.emplace_back(); }
+
+    void remove_part(const Part* part) {
+      WDP_ASSERT(part != nullptr);
+      // TODO: remove joints with this part
+      parts_.remove_if([&](const auto& elem) { return &elem == part; });
+    }
+
+    void add_joint();
+    void remove_joint();
 
   private:
-    std::vector<Part> parts_;
+    std::list<Part> parts_;
     std::vector<Joint> joints_;
   };
 }

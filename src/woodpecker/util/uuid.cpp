@@ -15,14 +15,20 @@
 // You should have received a copy of the GNU General Public License
 // along with Woodpecker.  If not, see <https://www.gnu.org/licenses/>.
 
-#include "part.hpp"
+#include "uuid.hpp"
 
-#include <utility>
-
-#include <fmt/format.h>
+#include <limits>
+#include <stdexcept>
 
 namespace wdp {
-  std::size_t Part::name_counter_{};
+  std::atomic<Id::Value> Id::counter_;
 
-  Part::Part() : name_{fmt::format("board.{}", ++name_counter_)} {}
+  Id Id::create_unique() {
+    const auto new_value = ++counter_;
+    if (new_value == 0) {
+      // counter wrapped around
+      throw std::logic_error{"unique ids exhausted"};
+    }
+    return Id{new_value};
+  }
 }
