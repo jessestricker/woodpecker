@@ -18,9 +18,20 @@ message(STATUS "Using Boost version: ${Boost_VERSION_STRING}")
 
 # dependencies: CPM
 include(cmake/CPM.cmake)
-CPMAddPackage("gh:gabime/spdlog@1.9.2")
-CPMAddPackage("gh:doctest/doctest#2.4.7")
-CPMAddPackage("gh:jeremyong/klein#16f46a0ad3c843beea7b13ea666658ca475ec665")
+CPMAddPackage(
+  NAME "fmt"
+  GIT_TAG "8.1.1"
+  GITHUB_REPOSITORY "fmtlib/fmt")
+CPMAddPackage(
+  NAME "spdlog"
+  GIT_TAG "v1.9.2"
+  GITHUB_REPOSITORY "gabime/spdlog"
+  OPTIONS "SPDLOG_FMT_EXTERNAL ON")
+CPMAddPackage(
+  NAME "klein"
+  VERSION "2.2.2-alpha"
+  GIT_TAG "16f46a0ad3c843beea7b13ea666658ca475ec665"
+  GITHUB_REPOSITORY "jeremyong/klein")
 
 # targets
 add_subdirectory(src/woodpecker)
