@@ -23,59 +23,30 @@
 #include <QLabel>
 #include <QMenuBar>
 #include <QStatusBar>
+#include <QToolBar>
+#include <Qt3DExtras/QDiffuseSpecularMaterial>
 #include <Qt3DExtras/QForwardRenderer>
 #include <Qt3DExtras/QGoochMaterial>
 #include <Qt3DExtras/QOrbitCameraController>
 #include <Qt3DExtras/QPlaneMesh>
+#include <Qt3DExtras/QTextureMaterial>
 #include <Qt3DRender/QCamera>
 #include <Qt3DRender/QGeometryRenderer>
+#include <Qt3DRender/QObjectPicker>
+#include <Qt3DRender/QPickEvent>
+#include <Qt3DRender/QPickingSettings>
+#include <Qt3DRender/QRenderSettings>
+#include <Qt3DRender/QTexture>
+#include <spdlog/spdlog.h>
 #include <woodpecker/config.hpp>
+#include <woodpecker/util/assert.hpp>
 
-#include "matcap_material.hpp"
+#include "part_entity.hpp"
 #include "util/qt.hpp"
 
 using namespace Qt3DRender;
 using namespace Qt3DExtras;
 using namespace Qt3DCore;
-
-namespace {
-  using namespace wdp;
-
-  Scene load_example() {
-    auto scene = Scene{};
-    auto mesh = Mesh::create_cuboid(1, 1, 1);
-    auto part = Part{mesh};
-    part.set_motor(kln::motor{kln::translator{2, 0, 1, 0}});
-    scene.add_part(part);
-    return scene;
-  }
-
-  QGeometryRenderer* wdp_mesh_to_qt_geo(const Mesh& mesh) {
-    // vertices
-    auto* vertex_buffer = new QBuffer{};
-    vertex_buffer->setData(app::qbyte_array_from_vector(mesh.vertices()));
-    auto* vertex_attr = new QAttribute{vertex_buffer, QAttribute::defaultPositionAttributeName(), QAttribute::Float, 4,
-                                       narrow<uint>(mesh.vertices().size())};
-    vertex_attr->setAttributeType(QAttribute::VertexAttribute);
-
-    // indices
-    const auto triangle_indices = mesh.triangulate();
-    auto* index_buffer = new QBuffer{};
-    index_buffer->setData(app::qbyte_array_from_vector(triangle_indices));
-    auto* index_attr = new QAttribute{index_buffer, QAttribute::defaultPositionAttributeName(), QAttribute::UnsignedInt,
-                                      1, narrow<uint>(triangle_indices.size() * 3)};
-    index_attr->setAttributeType(QAttribute::IndexAttribute);
-
-    // geometry and renderer
-    auto* geometry = new QGeometry{};
-    geometry->addAttribute(vertex_attr);
-    geometry->addAttribute(index_attr);
-    auto* geometry_renderer = new QGeometryRenderer{};
-    geometry_renderer->setGeometry(geometry);
-
-    return geometry_renderer;
-  }
-}
 
 namespace wdp::app {
   MainWindow::MainWindow() {
@@ -86,19 +57,22 @@ namespace wdp::app {
     setup_menu_bar();
     setup_status_bar();
     setup_side_bar();
+    setup_tool_bar();
 
     // setup 3D view
-    view_ = new Qt3DWindow{};
-    setCentralWidget(QWidget::createWindowContainer(view_, this));
+    view_ = new Qt3DWindow{nullptr, API::OpenGL};
+    auto* view_container = QWidget::createWindowContainer(view_, this);
+    view_container->setFocusPolicy(Qt::NoFocus);
+    setCentralWidget(view_container);
     view_->defaultFrameGraph()->setClearColor(0x6e95b8);
-    view_->defaultFrameGraph()->setShowDebugOverlay(true);
+    view_->defaultFrameGraph()->setShowDebugOverlay(false);
 
     // setup root entities
     view_root_ = new QEntity{};
     view_->setRootEntity(view_root_);
-    scene_root_ = new QEntity{view_root_};
     setup_ground_plane();
-    part_material_ = new MatCapMaterial{};
+    scene_root_ = new QEntity{view_root_};
+    scene_root_->setObjectName("scene root");
 
     // setup camera
     view_->camera()->setPosition({-4, 2, -4});
@@ -106,9 +80,15 @@ namespace wdp::app {
     auto* camera_ctrl = new QOrbitCameraController{view_root_};
     camera_ctrl->setCamera(view_->camera());
 
-    // load example scene
-    scene_ = load_example();
-    update_view();
+    // setup picking
+    view_->renderSettings()->pickingSettings()->setPickMethod(QPickingSettings::TrianglePicking);
+    auto* picker = new QObjectPicker{};
+    picker->setDragEnabled(true);
+    picker->setHoverEnabled(false);
+    QObject::connect(picker, &QObjectPicker::clicked, this, &MainWindow::click_part);
+    QObject::connect(picker, &QObjectPicker::moved, this, &MainWindow::drag_part);
+
+    scene_root_->addComponent(picker);
   }
 
   void MainWindow::setup_menu_bar() {
@@ -133,6 +113,17 @@ namespace wdp::app {
     addDockWidget(Qt::RightDockWidgetArea, outline);
   }
 
+  void MainWindow::setup_tool_bar() {
+    auto* toolbar = new QToolBar{"Tools"};
+    toolbar->addAction("Add", this, &MainWindow::add_part_to_scene);
+    toolbar->addAction("Clear", this, [this]() {
+      for (auto* child : scene_root_->childNodes()) {
+        delete child;
+      }
+    });
+    addToolBar(Qt::LeftToolBarArea, toolbar);
+  }
+
   void MainWindow::setup_ground_plane() {
     auto* mesh = new QPlaneMesh{};
     mesh->setWidth(10);
@@ -146,26 +137,45 @@ namespace wdp::app {
     ground_plane->addComponent(material);
   }
 
-  void MainWindow::update_view() {
-    // clear scene
-    delete scene_root_;
-    scene_root_ = new QEntity{view_root_};
-
-    // add entity for each scene part
-    for (const auto& part : scene_.parts()) {
-      // mesh
-      auto* geo_render = wdp_mesh_to_qt_geo(part.mesh());
-
-      // transform
-      auto* transform = new Qt3DCore::QTransform();
-      const auto tfm_matrix = qmatrix_from_kln_motor(part.motor());
-      transform->setMatrix(tfm_matrix);
-
-      // build entity
-      auto* entity = new QEntity{scene_root_};
-      entity->addComponent(geo_render);
-      entity->addComponent(part_material_);
-      entity->addComponent(transform);
+  void MainWindow::click_part(QPickEvent* event) {
+    auto* part_entity = qobject_cast<PartEntity*>(event->entity());
+    if (part_entity == nullptr) {
+      return;
     }
+
+    switch (event->button()) {
+      case QPickEvent::LeftButton:
+        editor_.set_selected_part(part_entity->part());
+        break;
+
+      default:
+        // do nothing
+        break;
+    }
+  }
+
+  void MainWindow::drag_part(QPickEvent* event) {
+    spdlog::info("move event");
+    auto* part_entity = qobject_cast<PartEntity*>(event->entity());
+    if (part_entity == nullptr) {
+      return;
+    }
+    if (event->button() != QPickEvent::LeftButton) {
+      // drag only with left mouse
+      return;
+    }
+    if (editor_.selected_part() != part_entity->part()) {
+      // only move selected part
+      return;
+    }
+    spdlog::info("dragging");
+    qDebug() << "drag:" << event->worldIntersection();
+  }
+
+  void MainWindow::add_part_to_scene() {
+    auto* part = editor_.add_part();
+    auto* entity = new PartEntity{part, scene_root_};
+    QObject::connect(&editor_, &SceneEditor::selected_part_changed, entity,
+                     [entity](const Part* part) { entity->set_selected(entity->part() == part); });
   }
 }

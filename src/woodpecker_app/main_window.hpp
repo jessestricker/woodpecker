@@ -21,7 +21,8 @@
 #include <Qt3DCore/QEntity>
 #include <Qt3DExtras/Qt3DWindow>
 #include <Qt3DRender/QMaterial>
-#include <woodpecker/scene.hpp>
+#include <Qt3DRender/QPickEvent>
+#include <woodpecker/scene_editor.hpp>
 
 namespace wdp::app {
   class MainWindow : public QMainWindow {
@@ -37,15 +38,16 @@ namespace wdp::app {
     Qt3DExtras::Qt3DWindow* view_;
     Qt3DCore::QEntity* view_root_;
     Qt3DCore::QEntity* scene_root_;
-    Qt3DRender::QMaterial* part_material_;
-    Scene scene_;
+    SceneEditor editor_;
 
     void setup_menu_bar();
     void setup_status_bar();
     void setup_side_bar();
+    void setup_tool_bar();
     void setup_ground_plane();
 
-    // slots
-    void update_view();
+    void click_part(Qt3DRender::QPickEvent* event);
+    void drag_part(Qt3DRender::QPickEvent* event);
+    void add_part_to_scene();
   };
 }
