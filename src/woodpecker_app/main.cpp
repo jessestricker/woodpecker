@@ -23,6 +23,10 @@
 
 namespace wdp::app {
   int main(int argc, char* argv[]) {
+#ifndef NDEBUG
+    spdlog::set_level(spdlog::level::debug);
+#endif
+
     spdlog::info("{} v{} by {}", project_name, project_version, project_author);
 
     const auto app = QApplication{argc, argv};
