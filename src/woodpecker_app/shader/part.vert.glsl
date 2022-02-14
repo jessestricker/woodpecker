@@ -4,9 +4,5 @@ in vec4 vertexPosition;
 uniform mat4 mvp;
 
 void main() {
-    // swizzle and normalize PGA point to LA position vector
-    vec4 vpos = vertexPosition.yzwx; // wxyz -> xyzw
-    vpos *= inversesqrt(pow(vpos.w, 2));
-
-    gl_Position = mvp * vpos;
+   gl_Position = mvp * vertexPosition;
 }

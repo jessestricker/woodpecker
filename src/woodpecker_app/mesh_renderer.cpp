@@ -17,6 +17,8 @@
 
 #include "mesh_renderer.hpp"
 
+#include <array>
+
 #include "util/qt.hpp"
 
 using namespace Qt3DCore;
@@ -28,7 +30,17 @@ namespace wdp::app {
   void MeshRenderer::update_mesh(const Mesh& mesh) {
     // vertices
     auto* vertex_buffer = new QBuffer{};
-    vertex_buffer->setData(qbyte_array_from_vector(mesh.vertices()));
+    auto vertex_data = QByteArray{};
+    for (const auto& vtx : mesh.vertices()) {
+      // normalize
+      const auto np = fix_kln::normalized(vtx.pos);
+      // swizzle
+      auto xyzw = std::array<float, 4>{np.x(), np.y(), np.z(), np.w()};
+      // store to buffer
+      vertex_data.append(reinterpret_cast<const char*>(xyzw.data()), xyzw.size() * sizeof(float));
+    }
+    vertex_buffer->setData(vertex_data);
+
     auto* vertex_attr = new QAttribute{vertex_buffer, QAttribute::defaultPositionAttributeName(), QAttribute::Float, 4,
                                        narrow<uint>(mesh.vertices().size())};
     vertex_attr->setAttributeType(QAttribute::VertexAttribute);
