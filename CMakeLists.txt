@@ -36,3 +36,22 @@ CPMAddPackage(
 # targets
 add_subdirectory(src/woodpecker)
 add_subdirectory(src/woodpecker_app)
+
+# sane defaults for standard C++
+# ##############################################################################
+
+# interface library exporting usage requirements
+add_library(cxx_std_20 INTERFACE)
+
+set_property(TARGET cxx_std_20 PROPERTY INTERFACE_CXX_EXTENSIONS OFF)
+
+# https://github.com/microsoft/STL/issues/1814#issuecomment-845572895
+target_compile_features(
+  cxx_std_20 INTERFACE $<IF:$<CXX_COMPILER_ID:MSVC>,cxx_std_23,cxx_std_20>)
+
+# enable 'conformance mode' for MSVC
+target_compile_options(
+  cxx_std_20
+  INTERFACE
+    "$<$<CXX_COMPILER_ID:MSVC>:/permissive-;/Zc:__cplusplus;/Zc:preprocessor;/D_MSVC_LANG=202004L>"
+)
