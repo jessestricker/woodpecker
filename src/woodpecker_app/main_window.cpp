@@ -125,15 +125,20 @@ namespace wdp::app {
   }
 
   void MainWindow::setup_ground_plane() {
-    auto* mesh = new QPlaneMesh{};
+    auto* ground_plane = new QEntity{view_root_};
+
+    auto* mesh = new QPlaneMesh{ground_plane};
     mesh->setWidth(10);
     mesh->setHeight(10);
-
-    auto* material = new QGoochMaterial{};
-    material->setDiffuse(0xaaaaaa);
-
-    auto* ground_plane = new QEntity{view_root_};
     ground_plane->addComponent(mesh);
+
+    auto* material = new QTextureMaterial{ground_plane};
+    material->setAlphaBlendingEnabled(true);
+    auto* texture = new QTextureLoader{material};
+    texture->setSource(QUrl{"qrc:/images/grid_cross.png"});
+    texture->setMagnificationFilter(QAbstractTexture::Nearest);
+    material->setTexture(texture);
+
     ground_plane->addComponent(material);
   }
 
