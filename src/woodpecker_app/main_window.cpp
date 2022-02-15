@@ -41,6 +41,7 @@
 #include <woodpecker/config.hpp>
 #include <woodpecker/util/assert.hpp>
 
+#include "camera_controller.hpp"
 #include "part_entity.hpp"
 #include "util/qt.hpp"
 
@@ -74,10 +75,10 @@ namespace wdp::app {
     scene_root_ = new QEntity{view_root_};
     scene_root_->setObjectName("scene root");
 
-    // setup camera
-    view_->camera()->setPosition({-4, 2, -4});
+    // set up camera
+    view_->camera()->setPosition({-6, 3, -6});
     view_->camera()->setViewCenter({0, 0, 0});
-    auto* camera_ctrl = new QOrbitCameraController{view_root_};
+    auto* camera_ctrl = new CameraController{view_root_};
     camera_ctrl->setCamera(view_->camera());
 
     // setup picking

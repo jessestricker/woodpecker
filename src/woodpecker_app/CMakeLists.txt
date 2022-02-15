@@ -1,5 +1,6 @@
 add_executable(
-  woodpecker_app WIN32
+  woodpecker_app
+  camera_controller.cpp
   main.cpp
   main.qrc
   main_window.cpp
