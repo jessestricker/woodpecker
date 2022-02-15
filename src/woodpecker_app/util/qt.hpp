@@ -18,11 +18,14 @@
 #pragma once
 
 #include <span>
+#include <string>
 #include <string_view>
 #include <vector>
 
 #include <QByteArray>
 #include <QMatrix4x4>
+#include <QVector2D>
+#include <QDebug>
 #include <QString>
 #include <klein/motor.hpp>
 #include <woodpecker/util/cast.hpp>
@@ -35,6 +38,11 @@ namespace wdp::app {
     const auto span = std::span{vec};
     const auto bytes_span = std::as_bytes(span);
     return QByteArray{reinterpret_cast<const char*>(bytes_span.data()), narrow<qsizetype>(bytes_span.size())};
+  }
+
+  template <class T>
+  std::string string_from_qt(T&& obj) {
+    return QDebug::toString(std::forward<T>(obj)).toStdString();
   }
 
   QMatrix4x4 qmatrix_from_kln_motor(const kln::motor& m);

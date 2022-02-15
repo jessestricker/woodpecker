@@ -16,17 +16,43 @@
 // along with Woodpecker.  If not, see <https://www.gnu.org/licenses/>.
 
 #include <QApplication>
+#include <QtGlobal>
 #include <spdlog/spdlog.h>
 #include <woodpecker/config.hpp>
 
 #include "main_window.hpp"
 
 namespace wdp::app {
+  void qt_msg_handler(QtMsgType type, const QMessageLogContext& ctx, const QString& msg) {
+    switch (type) {
+      case QtDebugMsg:
+        spdlog::debug("[QT] {}", msg.toUtf8().constData());
+        break;
+      case QtInfoMsg:
+        spdlog::info("[QT] {}", msg.toUtf8().constData());
+        break;
+      case QtWarningMsg:
+        spdlog::warn("[QT] [{}:{}] {}", ctx.file, ctx.line, msg.toUtf8().constData());
+        break;
+      case QtCriticalMsg:
+        spdlog::error("[QT] [{}:{}] {}", ctx.file, ctx.line, msg.toUtf8().constData());
+        break;
+      case QtFatalMsg:
+        try {
+          spdlog::critical("[QT] [{}:{}] {}", ctx.file, ctx.line, msg.toUtf8().constData());
+        } catch (...) {
+          // ignore
+        }
+        std::abort();
+    }
+  }
+
   int main(int argc, char* argv[]) {
 #ifndef NDEBUG
     spdlog::set_level(spdlog::level::debug);
 #endif
 
+    qInstallMessageHandler(&qt_msg_handler);
     spdlog::info("{} v{} by {}", project_name, project_version, project_author);
 
     const auto app = QApplication{argc, argv};
