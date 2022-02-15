@@ -27,9 +27,9 @@ namespace wdp::app {
     Q_OBJECT
 
   public:
-    static constexpr QRgb default_face_color = QRgb{0xd4c0af};
-    static constexpr QRgb selected_face_color = QRgb{0xe4d0bf};
-    static constexpr QRgb default_line_color = QRgb{0x000000};
+    static constexpr QRgb default_face_color = QRgb{0xd5c4b5};   // HSLuv: 50,20,80
+    static constexpr QRgb selected_face_color = QRgb{0xa88c6f};  // HSLuv: 50,40,60
+    static constexpr QRgb default_line_color = QRgb{0x1d1b19};   // HSLuv: 50,10,10
 
     explicit PartMaterial(Qt3DCore::QNode* parent = nullptr);
 
