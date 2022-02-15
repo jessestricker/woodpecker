@@ -136,7 +136,7 @@ namespace wdp::app {
     auto* material = new QTextureMaterial{ground_plane};
     material->setAlphaBlendingEnabled(true);
     auto* texture = new QTextureLoader{material};
-    texture->setSource(QUrl{"qrc:/images/grid_cross.png"});
+    texture->setSource(QUrl{"qrc:/images/grid.png"});
     texture->setMagnificationFilter(QAbstractTexture::Nearest);
     material->setTexture(texture);
 

@@ -2,6 +2,6 @@
     <qresource prefix="/">
         <file>shader/part.frag.glsl</file>
         <file>shader/part.vert.glsl</file>
-        <file>images/grid_cross.png</file>
+        <file>images/grid.png</file>
     </qresource>
 </RCC>
