@@ -24,5 +24,5 @@
 namespace wdp {
   std::size_t Part::name_counter_{};
 
-  Part::Part() : name_{fmt::format("board.{}", ++name_counter_)} {}
+  Part::Part() : name_{fmt::format("part.{}", ++name_counter_)} {}
 }
