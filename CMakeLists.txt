@@ -9,7 +9,7 @@ set(PROJECT_DISPLAY_NAME "Woodpecker")
 set(PROJECT_AUTHOR "Jesse Stricker")
 
 # dependencies: Qt
-find_package(Qt6 REQUIRED COMPONENTS Widgets 3DCore 3DRender 3DExtras)
+find_package(Qt6 REQUIRED COMPONENTS Widgets 3DCore 3DRender 3DInput 3DExtras)
 message(STATUS "Using Qt version: ${Qt6_VERSION}")
 
 # dependencies: Boost
@@ -32,6 +32,11 @@ CPMAddPackage(
   VERSION "2.2.2-alpha"
   GIT_TAG "16f46a0ad3c843beea7b13ea666658ca475ec665"
   GITHUB_REPOSITORY "jeremyong/klein")
+CPMAddPackage(
+  NAME "Catch2"
+  VERSION "3.0.0-preview4"
+  GIT_TAG "v3.0.0-preview4"
+  GITHUB_REPOSITORY "catchorg/Catch2")
 
 # targets
 add_subdirectory(src/woodpecker)

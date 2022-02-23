@@ -11,3 +11,8 @@ target_include_directories(woodpecker PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/..
 set_target_properties(woodpecker PROPERTIES AUTOMOC ON)
 target_link_libraries(woodpecker PUBLIC fmt::fmt spdlog::spdlog klein::klein
                                         Boost::boost Qt::Core cxx_std_20)
+
+if(${PROJECT_IS_TOP_LEVEL})
+  add_executable(unittest mesh.test.cpp)
+  target_link_libraries(unittest PRIVATE woodpecker Catch2::Catch2WithMain)
+endif()
