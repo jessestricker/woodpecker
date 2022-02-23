@@ -17,7 +17,9 @@
 
 #pragma once
 
-#include <Qt3DCore>
+#include <Qt3DCore/QEntity>
+#include <Qt3DCore/QTransform>
+#include <Qt3DExtras/QDiffuseSpecularMaterial>
 #include <woodpecker/part.hpp>
 
 #include "mesh_renderer.hpp"
@@ -38,7 +40,8 @@ namespace wdp::app {
 
   private:
     const Part* part_;
-    PartMaterial* material_;
+    // PartMaterial* material_;
+    Qt3DExtras::QDiffuseSpecularMaterial* material_;
     MeshRenderer* renderer_;
     Qt3DCore::QTransform* transform_;
   };

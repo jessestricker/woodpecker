@@ -90,7 +90,7 @@ namespace wdp {
     // add vertices
     auto vertex_indices = std::vector<VertexIndex>{};
     for (const auto& vtx : vertices) {
-      const auto join = (vtx.pos.normalized() & plane);
+      const auto join = (fix_kln::normalized(vtx.pos) & plane);
       const auto vtx_plane_dist = std::abs(join.scalar());
       WDP_ASSERT(vtx_plane_dist < merge_dist, "vertex must be in plane");
 
@@ -108,7 +108,7 @@ namespace wdp {
     auto all_tri_faces = std::vector<TriFace>{};
     for (const auto& face : faces_) {
       const auto tri_faces = triangulate_face(face);
-      all_tri_faces.insert(all_tri_faces.end(), tri_faces.begin(), tri_faces.end());
+      std::ranges::copy(tri_faces, std::back_inserter(all_tri_faces));
     }
     return all_tri_faces;
   }
@@ -166,13 +166,14 @@ namespace wdp {
         }
 
         // clip ear, remove idx from polygon
-        ears.push_back({idx_prev, idx, idx_next});
+        ears.push_back({{idx_prev, idx, idx_next}, face.plane});
         polygon.erase(iter);
+        break;
       }
     }
 
     // add remaining triangle to clipped ears
-    ears.push_back({polygon[0], polygon[1], polygon[2]});
+    ears.push_back({{polygon[0], polygon[1], polygon[2]}, face.plane});
 
     return ears;
   }

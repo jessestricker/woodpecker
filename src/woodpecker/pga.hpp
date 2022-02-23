@@ -36,5 +36,8 @@ namespace wdp {
     inline auto normalized(const kln::line& l) noexcept { return l / std::hypot(l.e12(), l.e31(), l.e23()); }
 
     inline auto normalized(const kln::point& p) noexcept { return p / std::abs(p.e123()); }
+
+    /// Returns the polarity of the plane, this is the direction orthogonal to the plane (a.k.a. the "normal").
+    inline auto polarity(const kln::plane& p) noexcept { return kln::direction{p.e1(), p.e2(), p.e3()}; }
   }
 }

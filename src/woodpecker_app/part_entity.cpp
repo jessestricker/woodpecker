@@ -29,11 +29,16 @@ namespace wdp::app {
     addComponent(renderer_);
 
     // material
-    material_ = new PartMaterial{};
+    // material_ = new PartMaterial{};
+    material_ = new Qt3DExtras::QDiffuseSpecularMaterial{};
+    material_->setDiffuse(QColor{PartMaterial::default_face_color});
+    material_->setAmbient(QColor{0x444444});
+    material_->setSpecular(QColorConstants::Black);
     addComponent(material_);
 
     // transform
     transform_ = new Qt3DCore::QTransform{};
+    transform_->setTranslation({});
     update_transform();
     addComponent(transform_);
   }
@@ -41,9 +46,11 @@ namespace wdp::app {
   void PartEntity::set_selected(bool selected) {
     spdlog::debug("selected part({}): {}", part_->name(), selected);
     if (selected) {
-      material_->set_face_color(PartMaterial::default_line_color);
+      // material_->set_face_color(PartMaterial::selected_face_color);
+      material_->setDiffuse(QColor{PartMaterial::selected_face_color});
     } else {
-      material_->set_face_color(PartMaterial::default_face_color);
+      // material_->set_face_color(PartMaterial::default_face_color);
+      material_->setDiffuse(QColor{PartMaterial::default_face_color});
     }
   }
 

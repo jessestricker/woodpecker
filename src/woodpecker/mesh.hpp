@@ -39,7 +39,10 @@ namespace wdp {
   };
 
   /// A triangular face of exactly 3 vertex indices.
-  using TriFace = std::array<VertexIndex, 3>;
+  struct TriFace {
+    std::array<VertexIndex, 3> vertices{};
+    kln::plane plane{};
+  };
 
   /// A polygonal mesh built from the faces and vertices.
   /// The vertices are positioned in 3D space.
@@ -70,13 +73,13 @@ namespace wdp {
     /// \return A list of index triples forming triangles.
     std::vector<TriFace> triangulate() const;
 
+    std::vector<TriFace> triangulate_face(const Face& face) const;
+
     const auto& vertices() const noexcept { return vertices_; }
     const auto& faces() const noexcept { return faces_; }
 
   private:
     std::vector<Vertex> vertices_;
     std::vector<Face> faces_;
-
-    std::vector<TriFace> triangulate_face(const Face& face) const;
   };
 }
