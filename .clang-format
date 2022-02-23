@@ -7,6 +7,7 @@ ColumnLimit: 120
 NamespaceIndentation: All
 AccessModifierOffset: -2
 FixNamespaceComments: false
+DerivePointerAlignment: false
 
 IncludeBlocks: Regroup
 IncludeCategories:
