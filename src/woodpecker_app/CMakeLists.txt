@@ -11,5 +11,11 @@ add_executable(
 
 set_target_properties(woodpecker_app PROPERTIES AUTOMOC ON AUTORCC ON)
 target_link_libraries(
-  woodpecker_app PRIVATE woodpecker Qt::Widgets Qt::3DCore Qt::3DRender
-                         Qt::3DExtras cxx_std_20)
+  woodpecker_app
+  PRIVATE woodpecker
+          Qt::Widgets
+          Qt::3DCore
+          Qt::3DRender
+          Qt::3DInput
+          Qt::3DExtras
+          cxx_std_20)
