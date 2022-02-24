@@ -30,7 +30,7 @@
 namespace wdp {
   class Scene {
   public:
-    inline static const auto ground_plane = kln::plane{1, 0, 1, 0};
+    inline static const auto ground_plane = kln::plane{0, 1, 0, 0};  // y = 0
     inline static const auto vertical_axis = kln::origin{} & kln::point{0, 1, 0};
 
     auto parts() const { return parts_ | std::ranges::views::all; }
