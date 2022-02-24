@@ -39,5 +39,8 @@ namespace wdp {
 
     /// Returns the polarity of the plane, this is the direction orthogonal to the plane (a.k.a. the "normal").
     inline auto polarity(const kln::plane& p) noexcept { return kln::direction{p.e1(), p.e2(), p.e3()}; }
+
+    /// Returns the ideal norm of a line.
+    inline auto ideal_norm(const kln::line& l) noexcept { return std::hypot(l.e01(), l.e02(), l.e03()); }
   }
 }
