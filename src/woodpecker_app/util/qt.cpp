@@ -31,4 +31,6 @@ namespace wdp::app {
     std::copy_n(std::begin(kln_mat.data), 4 * 4, qmat.data());
     return qmat;
   }
+
+  kln::point point_from_qvec(const QVector3D& vec) { return kln::point{vec.x(), vec.y(), vec.z()}; }
 }

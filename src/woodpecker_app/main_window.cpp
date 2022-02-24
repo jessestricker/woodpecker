@@ -17,32 +17,11 @@
 
 #include "main_window.hpp"
 
-#include <QAction>
-#include <QApplication>
-#include <QDockWidget>
-#include <QLabel>
-#include <QMenuBar>
-#include <QStatusBar>
-#include <QToolBar>
-#include <Qt3DExtras/QDiffuseSpecularMaterial>
-#include <Qt3DExtras/QForwardRenderer>
-#include <Qt3DExtras/QGoochMaterial>
-#include <Qt3DExtras/QOrbitCameraController>
-#include <Qt3DExtras/QPlaneMesh>
-#include <Qt3DExtras/QTextureMaterial>
-#include <Qt3DRender/QCamera>
-#include <Qt3DRender/QGeometryRenderer>
-#include <Qt3DRender/QObjectPicker>
-#include <Qt3DRender/QPickEvent>
-#include <Qt3DRender/QPickingSettings>
-#include <Qt3DRender/QRenderSettings>
-#include <Qt3DRender/QTexture>
-#include <spdlog/spdlog.h>
 #include <woodpecker/config.hpp>
-#include <woodpecker/util/assert.hpp>
 
 #include "camera_controller.hpp"
 #include "part_entity.hpp"
+#include "util/flags.hpp"
 #include "util/qt.hpp"
 
 using namespace Qt3DRender;
@@ -51,29 +30,37 @@ using namespace Qt3DCore;
 
 namespace wdp::app {
   MainWindow::MainWindow() {
-    // setup window
+    // set up window
     setWindowTitle(qstring_from_sv(project_name));
     setMinimumSize(minimum_size);
     resize(default_size);
     setup_menu_bar();
     setup_status_bar();
-    setup_side_bar();
+    setup_outline();
     setup_tool_bar();
 
-    // setup 3D view
-    view_ = new Qt3DWindow{nullptr, API::OpenGL};
-    auto* view_container = QWidget::createWindowContainer(view_, this);
-    view_container->setFocusPolicy(Qt::NoFocus);
+    // set up 3D view
+    view_ = new Qt3DWindow{};
+    view_->defaultFrameGraph()->setClearColor(QColor{0x6e95b8});
+    view_->defaultFrameGraph()->setShowDebugOverlay(true);
+    auto* view_container = QWidget::createWindowContainer(view_);
     setCentralWidget(view_container);
-    view_->defaultFrameGraph()->setClearColor(0x6e95b8);
-    view_->defaultFrameGraph()->setShowDebugOverlay(false);
 
-    // setup root entities
+    // set up root entities
     view_root_ = new QEntity{};
     view_->setRootEntity(view_root_);
     setup_ground_plane();
     scene_root_ = new QEntity{view_root_};
-    scene_root_->setObjectName("scene root");
+
+    // setup input devices
+    // auto* mouse_device = new Qt3DInput::QMouseDevice{scene_root_};
+    // auto* mouse_handler = new Qt3DInput::QMouseHandler{};
+    // mouse_handler->setSourceDevice(mouse_device);
+    // QObject::connect(mouse_handler, &Qt3DInput::QMouseHandler::clicked, [this](Qt3DInput::QMouseEvent* event) {
+    //  auto ray = create_screen_ray(QPoint{event->x(), event->y()});
+    //  spdlog::debug("clicked");
+    //});
+    // scene_root_->addComponent(mouse_handler);
 
     // set up camera
     view_->camera()->setPosition({-6, 3, -6});
@@ -81,15 +68,32 @@ namespace wdp::app {
     auto* camera_ctrl = new CameraController{view_root_};
     camera_ctrl->setCamera(view_->camera());
 
-    // setup picking
+    // set up sunlight, follows the camera
+    auto* sun = new QEntity{view_root_};
+    auto* sun_light = new QDirectionalLight{sun};
+    sun_light->setIntensity(2);
+    sun_light->setColor(QColorConstants::White);
+    sun_light->setWorldDirection(view_->camera()->viewVector());
+    sun->addComponent(sun_light);
+    auto* sun_tfm = new Qt3DCore::QTransform{sun};
+    sun_tfm->setTranslation(view_->camera()->position());
+    sun->addComponent(sun_tfm);
+    QObject::connect(view_->camera(), &QCamera::positionChanged, sun_tfm, &Qt3DCore::QTransform::setTranslation);
+    QObject::connect(view_->camera(), &QCamera::viewVectorChanged, sun_light, &QDirectionalLight::setWorldDirection);
+
+    // set up object picking
     view_->renderSettings()->pickingSettings()->setPickMethod(QPickingSettings::TrianglePicking);
     auto* picker = new QObjectPicker{};
     picker->setDragEnabled(true);
     picker->setHoverEnabled(false);
-    QObject::connect(picker, &QObjectPicker::clicked, this, &MainWindow::click_part);
-    QObject::connect(picker, &QObjectPicker::moved, this, &MainWindow::drag_part);
-
+    QObject::connect(picker, &QObjectPicker::clicked, this, &MainWindow::part_clicked);
+    QObject::connect(picker, &QObjectPicker::pressed, this, &MainWindow::part_mouse_pressed);
+    QObject::connect(picker, &QObjectPicker::moved, this, &MainWindow::part_mouse_moved);
+    QObject::connect(picker, &QObjectPicker::released, this, &MainWindow::part_mouse_released);
     scene_root_->addComponent(picker);
+
+    // connect editor
+    QObject::connect(&editor_, &SceneEditor::part_added, this, &MainWindow::scene_part_added);
   }
 
   void MainWindow::setup_menu_bar() {
@@ -106,22 +110,32 @@ namespace wdp::app {
 
   void MainWindow::setup_status_bar() { statusBar()->addWidget(new QLabel{"Ready"}); }
 
-  void MainWindow::setup_side_bar() {
-    auto* outline = new QDockWidget{"Outline", this};
-    outline->setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea);
-    outline->setFeatures(QDockWidget::DockWidgetMovable);
-    outline->setMinimumWidth(120);
-    addDockWidget(Qt::RightDockWidgetArea, outline);
+  void MainWindow::setup_outline() {
+    outline_ = new QListWidget{};
+    outline_->setSelectionMode(QAbstractItemView::NoSelection);
+
+    auto* container = new QDockWidget{"Outline", this};
+    container->setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea);
+    container->setFeatures(QDockWidget::DockWidgetMovable);
+    container->setMinimumWidth(120);
+    container->setWidget(outline_);
+    addDockWidget(Qt::RightDockWidgetArea, container);
   }
 
   void MainWindow::setup_tool_bar() {
     auto* toolbar = new QToolBar{"Tools"};
-    toolbar->addAction("Add", this, &MainWindow::add_part_to_scene);
-    toolbar->addAction("Clear", this, [this]() {
-      for (auto* child : scene_root_->childNodes()) {
-        delete child;
-      }
-    });
+    toolbar->addAction("Add", &editor_, &SceneEditor::add_part);
+    toolbar->addSeparator();
+
+    auto* translate_action = toolbar->addAction("Translate");
+    translate_action->setCheckable(true);
+    translate_action->setChecked(true);
+    auto* rotate_action = toolbar->addAction("Rotate");
+    rotate_action->setCheckable(true);
+    auto* transform_group = new QActionGroup{toolbar};
+    transform_group->addAction(translate_action);
+    transform_group->addAction(rotate_action);
+
     addToolBar(Qt::LeftToolBarArea, toolbar);
   }
 
@@ -143,45 +157,91 @@ namespace wdp::app {
     ground_plane->addComponent(material);
   }
 
-  void MainWindow::click_part(QPickEvent* event) {
-    auto* part_entity = qobject_cast<PartEntity*>(event->entity());
-    if (part_entity == nullptr) {
-      return;
-    }
+  kln::line MainWindow::create_screen_ray(const QPoint& screen_pos) {
+    const auto viewport = view_->defaultFrameGraph()->viewportRect();
+    // FIXME: viewport coords are [0,0] - [1,1], we need actual size
+    const auto screen_pos_x = static_cast<float>(screen_pos.x());
+    const auto screen_pos_y = static_cast<float>(viewport.height() - screen_pos.y());
 
-    switch (event->button()) {
-      case QPickEvent::LeftButton:
-        editor_.set_selected_part(part_entity->part());
-        break;
+    // in screen space
+    auto pos_near = QVector3D{screen_pos_x, screen_pos_y, 0};
+    auto pos_far = QVector3D{screen_pos_x, screen_pos_y, 1};
 
-      default:
-        // do nothing
-        break;
-    }
+    // in world space
+    pos_near = pos_near.unproject(view_->camera()->viewMatrix(), view_->camera()->projectionMatrix(),
+                                  view_->defaultFrameGraph()->viewportRect().toRect());
+    pos_far = pos_far.unproject(view_->camera()->viewMatrix(), view_->camera()->projectionMatrix(),
+                                view_->defaultFrameGraph()->viewportRect().toRect());
+    // join into line
+    return point_from_qvec(pos_near) & point_from_qvec(pos_far);
   }
 
-  void MainWindow::drag_part(QPickEvent* event) {
-    spdlog::info("move event");
-    auto* part_entity = qobject_cast<PartEntity*>(event->entity());
-    if (part_entity == nullptr) {
-      return;
-    }
-    if (event->button() != QPickEvent::LeftButton) {
-      // drag only with left mouse
-      return;
-    }
-    if (editor_.selected_part() != part_entity->part()) {
-      // only move selected part
-      return;
-    }
-    spdlog::info("dragging");
-    qDebug() << "drag:" << event->worldIntersection();
-  }
-
-  void MainWindow::add_part_to_scene() {
-    auto* part = editor_.add_part();
+  void MainWindow::scene_part_added(const Part* part) {
+    // create part entity
     auto* entity = new PartEntity{part, scene_root_};
     QObject::connect(&editor_, &SceneEditor::selected_part_changed, entity,
                      [entity](const Part* part) { entity->set_selected(entity->part() == part); });
+    QObject::connect(&editor_, &SceneEditor::part_transformed, entity, [entity](const Part* part) {
+      if (part == entity->part()) {
+        entity->update_transform();
+      }
+    });
+    // update outline
+    outline_->addItem(QString::fromStdString(part->name()));
+  }
+
+  void MainWindow::part_clicked(QPickEvent* event) {
+    auto* part_entity = qobject_cast<PartEntity*>(event->entity());
+    if (part_entity == nullptr) {
+      return;
+    }
+    if (event->button() == QPickEvent::LeftButton) {
+      // select part
+      editor_.set_selected_part(part_entity->part());
+    }
+  }
+
+  void MainWindow::part_mouse_pressed(Qt3DRender::QPickEvent* event) {
+    auto* part_entity = qobject_cast<PartEntity*>(event->entity());
+    if (part_entity == nullptr) {
+      return;
+    }
+    if (part_entity->part() != editor_.selected_part()) {
+      return;
+    }
+
+    if (event->button() == QPickEvent::LeftButton) {
+      // start moving a part
+      const auto drag_mode = Flags{event->modifiers()}.is_set(QPickEvent::ShiftModifier)
+                                 ? SceneEditor::DragMode::along_vertical_axis
+                                 : SceneEditor::DragMode::along_ground_plane;
+      const auto start_point = point_from_qvec(event->worldIntersection());
+      editor_.start_dragging(start_point, drag_mode);
+    }
+  }
+
+  void MainWindow::part_mouse_moved(QPickEvent* event) {
+    auto* part_entity = qobject_cast<PartEntity*>(event->entity());
+    if (part_entity == nullptr) {
+      return;
+    }
+    if (part_entity->part() != editor_.selected_part()) {
+      return;
+    }
+    if (Flags{event->buttons()}.is_set(QPickEvent::LeftButton)) {
+      const auto target_point = point_from_qvec(event->worldIntersection());
+      editor_.drag_selected(target_point);
+    }
+  }
+
+  void MainWindow::part_mouse_released(Qt3DRender::QPickEvent* event) {
+    auto* part_entity = qobject_cast<PartEntity*>(event->entity());
+    if (part_entity == nullptr) {
+      return;
+    }
+    if (part_entity->part() != editor_.selected_part()) {
+      return;
+    }
+    editor_.commit_dragging();
   }
 }

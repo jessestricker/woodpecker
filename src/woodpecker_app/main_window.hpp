@@ -17,11 +17,11 @@
 
 #pragma once
 
-#include <QMainWindow>
-#include <Qt3DCore/QEntity>
-#include <Qt3DExtras/Qt3DWindow>
-#include <Qt3DRender/QMaterial>
-#include <Qt3DRender/QPickEvent>
+#include <Qt3DCore>
+#include <Qt3DExtras>
+#include <Qt3DInput>
+#include <Qt3DRender>
+#include <QtWidgets>
 #include <woodpecker/scene_editor.hpp>
 
 namespace wdp::app {
@@ -40,14 +40,21 @@ namespace wdp::app {
     Qt3DCore::QEntity* scene_root_;
     SceneEditor editor_;
 
+    QListWidget* outline_{nullptr};
+
     void setup_menu_bar();
     void setup_status_bar();
-    void setup_side_bar();
+    void setup_outline();
     void setup_tool_bar();
     void setup_ground_plane();
 
-    void click_part(Qt3DRender::QPickEvent* event);
-    void drag_part(Qt3DRender::QPickEvent* event);
-    void add_part_to_scene();
+    kln::line create_screen_ray(const QPoint& screen_pos);
+
+    // slots:
+    void scene_part_added(const Part* part);
+    void part_clicked(Qt3DRender::QPickEvent* event);
+    void part_mouse_pressed(Qt3DRender::QPickEvent* event);
+    void part_mouse_moved(Qt3DRender::QPickEvent* event);
+    void part_mouse_released(Qt3DRender::QPickEvent* event);
   };
 }

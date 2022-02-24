@@ -23,11 +23,12 @@
 #include <vector>
 
 #include <QByteArray>
-#include <QMatrix4x4>
-#include <QVector2D>
 #include <QDebug>
+#include <QMatrix4x4>
 #include <QString>
+#include <QVector2D>
 #include <klein/motor.hpp>
+#include <klein/point.hpp>
 #include <woodpecker/util/cast.hpp>
 
 namespace wdp::app {
@@ -46,4 +47,5 @@ namespace wdp::app {
   }
 
   QMatrix4x4 qmatrix_from_kln_motor(const kln::motor& m);
+  kln::point point_from_qvec(const QVector3D& vec);
 }
