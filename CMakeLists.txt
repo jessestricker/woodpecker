@@ -30,8 +30,8 @@ CPMAddPackage(
 CPMAddPackage(
   NAME "klein"
   VERSION "2.2.2-alpha"
-  GIT_TAG "16f46a0ad3c843beea7b13ea666658ca475ec665"
-  GITHUB_REPOSITORY "jeremyong/klein")
+  GIT_TAG "9e16beeb13e1e5ecb46be5cae37c545ab18f25b1"
+  GITHUB_REPOSITORY "jessestricker/klein")
 CPMAddPackage(
   NAME "Catch2"
   VERSION "3.0.0-preview4"
