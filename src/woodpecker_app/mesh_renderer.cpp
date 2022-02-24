@@ -58,7 +58,7 @@ namespace wdp::app {
     auto* index_buffer = new QBuffer{this};
     index_buffer->setData(idx_data);
 
-    const auto stride = (3 + 3) * sizeof(float);  // pos (vec3), nrm (vec3)
+    const auto stride = narrow<uint>((3 + 3) * sizeof(float));  // pos (vec3), nrm (vec3)
 
     // create vertex position attribute
     auto* vtx_pos_attr = new QAttribute{this};
@@ -66,7 +66,7 @@ namespace wdp::app {
     vtx_pos_attr->setName(QAttribute::defaultPositionAttributeName());
     vtx_pos_attr->setVertexBaseType(QAttribute::Float);
     vtx_pos_attr->setVertexSize(3);
-    vtx_pos_attr->setCount(triangles.size() * 3);
+    vtx_pos_attr->setCount(narrow<uint>(triangles.size() * 3));
     vtx_pos_attr->setBuffer(vertex_buffer);
     vtx_pos_attr->setByteStride(stride);
 
@@ -76,7 +76,7 @@ namespace wdp::app {
     vtx_nrm_attr->setName(QAttribute::defaultNormalAttributeName());
     vtx_nrm_attr->setVertexBaseType(QAttribute::Float);
     vtx_nrm_attr->setVertexSize(3);
-    vtx_nrm_attr->setCount(triangles.size() * 3);
+    vtx_nrm_attr->setCount(narrow<uint>(triangles.size() * 3));
     vtx_nrm_attr->setBuffer(vertex_buffer);
     vtx_nrm_attr->setByteStride(stride);
     vtx_nrm_attr->setByteOffset(3 * sizeof(float));
@@ -86,7 +86,7 @@ namespace wdp::app {
     idx_attr->setAttributeType(QAttribute::IndexAttribute);
     idx_attr->setVertexBaseType(QAttribute::UnsignedInt);
     idx_attr->setBuffer(index_buffer);
-    idx_attr->setCount(triangles.size() * 3);
+    idx_attr->setCount(narrow<uint>(triangles.size() * 3));
 
     // geometry
     auto* geometry = new QGeometry{};
