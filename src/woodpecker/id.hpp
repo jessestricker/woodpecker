@@ -19,8 +19,10 @@
 
 #include <atomic>
 #include <cstdint>
+#include <mutex>
+#include <string>
 
-#include "fmt/format.h"
+#include <fmt/format.h>
 
 namespace wdp {
   class Id {
@@ -28,26 +30,30 @@ namespace wdp {
     using Value = std::uint64_t;
 
     constexpr explicit Id(Value value) noexcept : value_{value} {}
+    constexpr explicit operator Value() const noexcept { return value_; }
 
-    /// @throw std::logic_error if all unique Ids are exhausted
-    static Id create_unique();
-
-    constexpr bool operator==(const Id&) const noexcept = default;
-
-    constexpr Value value() const noexcept { return value_; }
+    friend constexpr bool operator==(Id, Id) noexcept = default;
 
   private:
-    static std::atomic<Value> counter_;
-
     Value value_;
+  };
+
+  class IdPool {
+  public:
+    /// Creates a new unique Id.
+    Id operator()();
+
+  private:
+    std::mutex mutex_;
+    Id::Value last_value_;
   };
 }
 
 template <>
 struct fmt::formatter<wdp::Id> : fmt::formatter<std::string> {
-  template <class FC>
-  auto format(const wdp::Id& id, FC& ctx) {
-    const auto str = fmt::format("{:x}", id.value());
+  template <typename FormatContext>
+  auto format(const wdp::Id& id, FormatContext& ctx) {
+    const auto str = fmt::format("{:016x}", static_cast<wdp::Id::Value>(id));
     return fmt::formatter<std::string>::format(str, ctx);
   }
 };

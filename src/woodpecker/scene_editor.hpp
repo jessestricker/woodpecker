@@ -22,6 +22,7 @@
 #include <QObject>
 #include <spdlog/spdlog.h>
 #include <woodpecker/scene.hpp>
+#include <woodpecker/util/assert.hpp>
 
 namespace wdp {
   class SceneEditor : public QObject {

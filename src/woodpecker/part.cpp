@@ -22,7 +22,5 @@
 #include <fmt/format.h>
 
 namespace wdp {
-  std::size_t Part::name_counter_{};
-
-  Part::Part() : name_{fmt::format("part.{}", ++name_counter_)} {}
+  Part::Part(Id id) : id_{id}, name_{fmt::format("part.{}", id_)} {}
 }

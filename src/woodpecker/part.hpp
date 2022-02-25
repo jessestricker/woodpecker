@@ -20,13 +20,16 @@
 #include <memory>
 #include <string>
 
+#include <woodpecker/id.hpp>
 #include <woodpecker/mesh.hpp>
 #include <woodpecker/pga.hpp>
 
 namespace wdp {
   class Part {
   public:
-    Part();
+    explicit Part(Id id);
+
+    auto id() const noexcept { return id_; }
 
     const auto& name() const noexcept { return name_; }
     void set_name(const std::string& name) { name_ = name; }
@@ -38,8 +41,7 @@ namespace wdp {
     void set_motor(const kln::motor& motor) { motor_ = motor; }
 
   private:
-    static std::size_t name_counter_;
-
+    Id id_;             ///< unique id
     std::string name_;  ///< name, must not be unique
     Mesh mesh_;         ///< the mesh of the part, in local space
     kln::motor motor_{identity_motor};

@@ -42,8 +42,10 @@ namespace wdp {
     JointTypeBase() noexcept = default;
   };
 
+  using JointTypePtr = std::unique_ptr<JointTypeBase>;
+
   struct ButtJointType : JointTypeBase {
-    Fastener fastener;
+    Fastener fastener{Fastener::dowel};
   };
 
   struct BoxJointType : JointTypeBase {
@@ -52,7 +54,12 @@ namespace wdp {
 
   /// A joint is a connection between two parts.
   struct Joint {
-    std::unique_ptr<JointTypeBase> type;
-    std::array<const Part*, 2> parts;
+    using PartIds = std::array<Id, 2>;
+
+    Id id;
+    JointTypePtr type;
+    PartIds part_ids;
+
+    Joint(Id id, JointTypePtr type, const PartIds& part_ids);
   };
 }

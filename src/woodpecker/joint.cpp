@@ -16,3 +16,8 @@
 // along with Woodpecker.  If not, see <https://www.gnu.org/licenses/>.
 
 #include "joint.hpp"
+
+namespace wdp {
+  Joint::Joint(Id id, JointTypePtr type, const Joint::PartIds& part_ids)
+      : id(id), type(std::move(type)), part_ids(part_ids) {}
+}

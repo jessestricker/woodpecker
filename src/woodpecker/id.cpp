@@ -15,20 +15,22 @@
 // You should have received a copy of the GNU General Public License
 // along with Woodpecker.  If not, see <https://www.gnu.org/licenses/>.
 
-#include "uuid.hpp"
+#include "id.hpp"
 
-#include <limits>
 #include <stdexcept>
 
 namespace wdp {
-  std::atomic<Id::Value> Id::counter_;
+  Id IdPool::operator()() {
+    const auto lock = std::lock_guard{mutex_};
 
-  Id Id::create_unique() {
-    const auto new_value = ++counter_;
+    const auto new_value = ++last_value_;
     if (new_value == 0) {
-      // counter wrapped around
-      throw std::logic_error{"unique ids exhausted"};
+      // decrease, so that next time this method is invoked it throws again
+      --last_value_;
+
+      throw std::runtime_error{"unique ids exhausted"};
     }
+
     return Id{new_value};
   }
 }

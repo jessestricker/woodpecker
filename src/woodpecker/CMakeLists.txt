@@ -1,5 +1,12 @@
-add_library(woodpecker STATIC joint.cpp mesh.cpp part.cpp pga.cpp scene.cpp
-                              scene_editor.cpp)
+add_library(
+  woodpecker STATIC
+  id.cpp
+  joint.cpp
+  mesh.cpp
+  part.cpp
+  pga.cpp
+  scene.cpp
+  scene_editor.cpp)
 add_library(woodpecker::woodpecker ALIAS woodpecker)
 
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/config.in.hpp

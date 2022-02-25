@@ -21,11 +21,12 @@
 #include <list>
 #include <ranges>
 #include <span>
+#include <vector>
 
+#include <woodpecker/id.hpp>
 #include <woodpecker/joint.hpp>
 #include <woodpecker/part.hpp>
 #include <woodpecker/pga.hpp>
-#include <woodpecker/util/assert.hpp>
 
 namespace wdp {
   class Scene {
@@ -36,19 +37,24 @@ namespace wdp {
     auto parts() const { return parts_ | std::ranges::views::all; }
     auto parts() { return parts_ | std::ranges::views::all; }
 
-    Part& add_part() { return parts_.emplace_back(); }
+    bool has_part(Id part_id) const;
 
-    void remove_part(const Part* part) {
-      WDP_ASSERT(part != nullptr);
-      // TODO: remove joints with this part
-      parts_.remove_if([&](const auto& elem) { return &elem == part; });
-    }
+    Part& add_part();
 
-    void add_joint();
-    void remove_joint();
+    /// Removes the part with specified id and all joints connecting this part to other.
+    /// Returns the list of removed joints.
+    std::vector<Joint> remove_part(Id part_id);
+
+    /// Adds a new joint between two existing parts.
+    Joint& add_joint(JointTypePtr type, Id part_id_0, Id part_id_1);
+
+    void remove_joint(Id joint_id);
 
   private:
+    IdPool parts_ids_;
     std::list<Part> parts_;
-    std::vector<Joint> joints_;
+
+    IdPool joints_ids_;
+    std::list<Joint> joints_;
   };
 }
