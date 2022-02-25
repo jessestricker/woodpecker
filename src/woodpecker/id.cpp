@@ -23,14 +23,14 @@ namespace wdp {
   Id IdPool::operator()() {
     const auto lock = std::lock_guard{mutex_};
 
-    const auto new_value = ++last_value_;
-    if (new_value == 0) {
-      // decrease, so that next time this method is invoked it throws again
-      --last_value_;
-
-      throw std::runtime_error{"unique ids exhausted"};
+    if (!exhausted_) {
+      const auto new_value = ++last_value_;
+      if (new_value != static_cast<Id::Value>(Id::invalid())) {
+        return Id{new_value};
+      }
+      exhausted_ = true;
     }
 
-    return Id{new_value};
+    throw std::runtime_error{"id pool exhausted"};
   }
 }

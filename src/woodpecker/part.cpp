@@ -17,10 +17,9 @@
 
 #include "part.hpp"
 
-#include <utility>
-
 #include <fmt/format.h>
+#include <woodpecker/util/assert.hpp>
 
 namespace wdp {
-  Part::Part(Id id) : id_{id}, name_{fmt::format("part.{}", id_)} {}
+  Part::Part(Id id) : id_{id}, name_{fmt::format("part.{}", id_)} { WDP_ASSERT(id); }
 }

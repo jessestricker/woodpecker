@@ -17,7 +17,11 @@
 
 #include "joint.hpp"
 
+#include <woodpecker/util/assert.hpp>
+
 namespace wdp {
   Joint::Joint(Id id, JointTypePtr type, const Joint::PartIds& part_ids)
-      : id(id), type(std::move(type)), part_ids(part_ids) {}
+      : id(id), type(std::move(type)), part_ids(part_ids) {
+    WDP_ASSERT(id);
+  }
 }

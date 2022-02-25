@@ -29,10 +29,13 @@ namespace wdp {
   public:
     using Value = std::uint64_t;
 
+    static constexpr Id invalid() noexcept { return Id{0}; }
+
     constexpr explicit Id(Value value) noexcept : value_{value} {}
     constexpr explicit operator Value() const noexcept { return value_; }
-
     friend constexpr bool operator==(Id, Id) noexcept = default;
+
+    constexpr operator bool() const noexcept { return *this != invalid(); }
 
   private:
     Value value_;
@@ -45,7 +48,8 @@ namespace wdp {
 
   private:
     std::mutex mutex_;
-    Id::Value last_value_;
+    bool exhausted_{false};
+    Id::Value last_value_{static_cast<Id::Value>(Id::invalid())};
   };
 }
 
