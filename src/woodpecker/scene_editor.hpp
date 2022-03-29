@@ -81,7 +81,7 @@ namespace wdp {
       last_drag_point_ = projected_target;
 
       // check for snapping
-      drag_may_join_ = check_drag_may_join();
+      drag_joinable_part_ = check_drag_may_join();
 
       // translate part
       selected_part_->set_motor(before_drag_ * drag_motion_);
@@ -91,6 +91,11 @@ namespace wdp {
     void commit_dragging() {
       if (!is_dragging_) {
         return;
+      }
+
+      // add joint
+      if (drag_joinable_part_ && !scene_.has_joint_between(selected_part_->id(), drag_joinable_part_)) {
+        // TODO: user may select different joint types
       }
 
       is_dragging_ = false;
@@ -111,6 +116,7 @@ namespace wdp {
     void part_transformed(const Part* part);
     void part_added(const Part* part);
     void part_removed(const Part* part);
+    void joint_added(const Joint& joint);
 
   private:
     Scene scene_;
@@ -120,7 +126,7 @@ namespace wdp {
     bool is_dragging_{false};
     DragMode drag_mode_{};
     kln::point last_drag_point_{};
-    bool drag_may_join_{false};
+    Id drag_joinable_part_{Id::invalid()};
     kln::motor before_drag_{};
     kln::motor drag_motion_{};
 
@@ -135,7 +141,7 @@ namespace wdp {
       }
     }
 
-    bool check_drag_may_join() {
+    Id check_drag_may_join() {
       const auto part_motor = before_drag_ * drag_motion_;
       for (const auto& face : selected_part_->mesh().faces()) {
         const auto plane = fix_kln::normalized(part_motor(face.plane));
@@ -162,11 +168,11 @@ namespace wdp {
 
             const auto snap_motor = kln::sqrt((other_plane * plane).constrained());
             drag_motion_ = drag_motion_ * snap_motor;
-            return true;
+            return other_part.id();
           }
         }
       }
-      return false;
+      return Id::invalid();
     }
   };
 }

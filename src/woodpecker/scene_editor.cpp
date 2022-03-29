@@ -17,6 +17,4 @@
 
 #include "scene_editor.hpp"
 
-namespace wdp {
-
-}
+namespace wdp {}

@@ -39,6 +39,9 @@ namespace wdp {
 
     bool has_part(Id part_id) const;
 
+    /// Returns whether there exists a joint like (part_id_0, part_id_1) or (part_id_1, part_id_0).
+    bool has_joint_between(Id part_id_0, Id part_id_1) const;
+
     Part& add_part();
 
     /// Removes the part with specified id and all joints connecting this part to other.

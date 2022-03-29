@@ -24,6 +24,13 @@ namespace wdp {
     return std::ranges::any_of(parts_, [&](const auto& part) { return part.id() == part_id; });
   }
 
+  bool Scene::has_joint_between(Id part_id_0, Id part_id_1) const {
+    return std::ranges::any_of(joints_, [&](const Joint& joint) {
+      return (joint.part_ids[0] == part_id_0 && joint.part_ids[1] == part_id_1) ||
+             (joint.part_ids[1] == part_id_0 && joint.part_ids[0] == part_id_1);
+    });
+  }
+
   Part& Scene::add_part() { return parts_.emplace_back(parts_ids_()); }
 
   std::vector<Joint> Scene::remove_part(Id part_id) {
